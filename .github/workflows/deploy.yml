@@ -1,0 +1,28 @@
+name: Docker Compose Deploy
+
+on:
+    push:
+        branches:
+            - main # Trigger this workflow on pushes to the main branch
+
+jobs:
+    build_and_deploy:
+        runs-on: [self-hosted, linux] # Use the labels you assigned to your self-hosted runner
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Build and deploy with Docker Compose
+              run: |
+                  echo "Starting Docker Compose with --build and --force-recreate..."
+                  cd /dsec_bot
+                  docker-compose up -d --build --force-recreate
+
+                  echo "Deployment complete."
+
+            # Optional: Clean up old Docker images to save disk space
+            - name: Clean up old Docker images
+              run: |
+                  echo "Cleaning up dangling Docker images..."
+                  docker image prune -f
