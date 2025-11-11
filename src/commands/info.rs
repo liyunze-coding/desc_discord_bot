@@ -1,6 +1,6 @@
 use crate::{Context, Error};
 use poise::CreateReply;
-use serenity::all::{ChannelType, Colour, CreateEmbed, CreateEmbedFooter, GuildId, User};
+use serenity::all::{ChannelType, Colour, CreateEmbed, CreateEmbedFooter, GuildId, User, UserId};
 use std::{collections::HashMap, time::Instant};
 
 /// Show this help menu
@@ -175,6 +175,46 @@ pub async fn serverinfo(ctx: Context<'_>) -> Result<(), Error> {
         .field("Description", server_description, false)
         .footer(embed_footer)
         .color(embed_color);
+
+    ctx.send(CreateReply::default().embed(result_embed_msg))
+        .await?;
+
+    Ok(())
+}
+
+/// Display DSEC Bot's information
+#[poise::command(slash_command)]
+pub async fn botinfo(ctx: Context<'_>) -> Result<(), Error> {
+    let bot_id = UserId::new(1434887135135268935);
+    let discord_member = GuildId::member(ctx.guild_id().unwrap(), ctx, bot_id).await?;
+    let discord_user = discord_member.user;
+
+    // color
+    let embed_color = discord_user.accent_colour.unwrap_or(Colour::DARK_GREY);
+
+    // member dates
+    let member_created_at = discord_user.created_at().format("%d/%m/%Y %I:%M %p");
+
+    // user information
+    let user_id = &discord_user.id;
+    let user_avatar_url = discord_user
+        .avatar_url()
+        .unwrap_or(discord_user.default_avatar_url());
+
+    // embed
+    let result_embed_msg = CreateEmbed::new()
+        .thumbnail(user_avatar_url)
+        .color(embed_color)
+        .title("DSEC Bot Info")
+        .description("The DSEC Discord Bot is a project by **Deakin Software Engineering Club** to encourage students to learn Rust in a practical and interactive collaboration project")
+        .field("Tech Stack", "Rust (Poise framework)", true)
+        .field(
+            "Repository URL",
+            "[Github Repository](https://github.com/liyunze-coding/DSEC-Discord-Bot)",
+            true,
+        )
+        .field("Created At", format!("{}", member_created_at), false)
+        .footer(CreateEmbedFooter::new(format!("ID: {}", user_id)));
 
     ctx.send(CreateReply::default().embed(result_embed_msg))
         .await?;
